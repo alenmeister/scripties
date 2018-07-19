@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $OpenBSD: sftp.sh, 2017/09/15 10:12:43 anigma Exp $
+# $OpenBSD: useradd_sftp.sh, 2017/09/15 10:12:43 anigma Exp $
 
 # Failsafe to prevent from running without any arguments
 if [ $# -eq 0 ]; then
@@ -10,24 +10,24 @@ fi
 
 # Parse the commandline parameters:
 while [ ! -z "$1" ]; do
-	case $1 in
-		-u)
-			USERNAME="$2"
-			shift
-			;;
-		-d)
-			DOMAIN="$2"
-			shift
-			;;
-		-*)
-			echo "Unsupported parameter '$1'!"
-			exit 1
-			;;
-		*) # Everything else but switches (which start with '-') follows:
-			echo "Usage: useradd_sftp.sh -u <username> -d <domain>"
-			exit 1
-			;;
-	esac
+    case $1 in
+        -u)
+            USERNAME="$2"
+            shift
+            ;;
+        -d)
+            DOMAIN="$2"
+            shift
+            ;;
+        -*)
+            echo "Unsupported parameter '$1'!"
+            exit 1
+            ;;
+        *) # Everything else but switches (which start with '-') follows:
+            echo "Usage: useradd_sftp.sh -u <username> -d <domain>"
+            exit 1
+            ;;
+    esac
 shift # past argument or value
 done
 
