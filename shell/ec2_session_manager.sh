@@ -46,11 +46,11 @@ if [ "$?" -ne 0 ]; then
 fi
 
 # Get the instance ID from an EC2 service
-instanceId=$(aws ec2 describe-instances \
+instance_id=$(aws ec2 describe-instances \
     --filters "Name=tag:Name,Values=$1" \
     --query "Reservations[*].Instances[*].[InstanceId]" \
     --profile $profile \
     --output text)
 
 # Connect to a Session Manager from localhost
-aws ssm start-session --target $instanceId --profile $profile
+aws ssm start-session --target $instance_id --profile $profile
