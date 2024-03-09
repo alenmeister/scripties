@@ -24,43 +24,84 @@ def store_wpa_entries(ssid: str, passphrase: str):
                     line = re.sub(ssid_pattern, ssid, line)
                 elif psk_pattern.search(line):
                     line = re.sub(psk_pattern, psk.hex(), line)
+                
                 print(line, end='')
+
     except PermissionError:
         print(f'Permission denied while access {file_path}\n' 
               f'Execute with an elevated user (hint: doas)')
 
 
-def restart_networking_service():
+def restart_service():
     try:
         subprocess.Popen(
-            ['systemctl', 'restart', 'networking.service'],
+            [
+                'systemctl',
+                'restart',
+                'networking.service'
+            ],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True
         )
 
-        # Give background job a few seconds to process
+        # Give the background job a few seconds to process
         time.sleep(2)
 
         while True:
             status = subprocess.run(
-                ['systemctl', 'is-active', 'networking.service'], 
-                capture_output=True, 
+                [
+                    'systemctl',
+                    'is-active',
+                    'networking.service'
+                ],
+                capture_output=True,
                 text=True
             )
-            
+
             is_active = status.stdout.strip().lower() == 'active'
 
             if is_active:
-                print('The networking service is active')
+                print('Network status: active')
                 break
             else:
-                print(f'Networking service status: {status.stdout.strip()}')
+                print(f'Network status: {status.stdout.strip()}')
+
+            # Wait for a short interval before checking again
+            time.sleep(4)
+
+    except subprocess.CalledProcessError as err:
+        print(f'Something went wrong while restarting the networking service:\n {err}')
+
+
+def validate_wifi_connection():
+    try:
+        while True:
+            result = subprocess.run(
+                [
+                    'ip',
+                    'address',
+                    'show',
+                    'wlp4s0'
+                ],
+                capture_output=True,
+                text=True
+            )
+
+            inet_line = re.search(r'inet (\S+)', result.stdout)
+
+            if inet_line:
+                ip_address = inet_line.group(1)
+                print(f'Assigned IP address: {ip_address}')
+                break;
+            else:
+                print('Checking for an established connection and assigned IP address...')
 
             # Wait for a short interval before checking again
             time.sleep(2)
-    except subprocess.CalledProcessError as err:
-        print(f'Something went wrong during restart of networking service:\n {err}')
+    
+    except Exception as e:
+        print(f'An exception has been thrown:\n {e}')
 
 
 def main():
@@ -74,6 +115,7 @@ def main():
         ssid, passphrase = args.connect
         store_wpa_entries(ssid, passphrase)
         restart_service()
+        validate_wifi_connection()
     else:
         parser.print_help()
 
