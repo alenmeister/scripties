@@ -24,7 +24,6 @@ def store_wpa_entries(ssid: str, passphrase: str):
                     line = re.sub(ssid_pattern, ssid, line)
                 elif psk_pattern.search(line):
                     line = re.sub(psk_pattern, psk.hex(), line)
-                
                 print(line, end='')
     except PermissionError:
         print(f'Permission denied while access {file_path}\n' 
@@ -49,6 +48,7 @@ def restart_networking_service():
                 capture_output=True, 
                 text=True
             )
+            
             is_active = status.stdout.strip().lower() == 'active'
 
             if is_active:
@@ -59,9 +59,8 @@ def restart_networking_service():
 
             # Wait for a short interval before checking again
             time.sleep(2)
-
     except subprocess.CalledProcessError as err:
-        print(f'Something went wrong during execution of `systemctl`:\n {err}')
+        print(f'Something went wrong during restart of networking service:\n {err}')
 
 
 def main():
