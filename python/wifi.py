@@ -32,7 +32,7 @@ def store_wpa_entries(ssid: str, passphrase: str):
               f'Execute with an elevated user (hint: doas)')
 
 
-def restart_service():
+def restart_network_service():
     try:
         subprocess.Popen(
             [
@@ -74,7 +74,18 @@ def restart_service():
         print(f'Something went wrong while restarting the networking service:\n {err}')
 
 
-def validate_wifi_connection():
+def ping():
+    try:
+        subprocess.check_output(['ping', '-c 3', 'google.no'])
+        print('Connection established')
+        return True
+
+    except subprocess.CalledProcessError:
+        print(f'Connection could not be established:\n {err}')
+        return False
+
+
+def validate_network_connection():
     try:
         while True:
             result = subprocess.run(
@@ -93,15 +104,16 @@ def validate_wifi_connection():
             if inet_line:
                 ip_address = inet_line.group(1)
                 print(f'Assigned IP address: {ip_address}')
+                ping()
                 break;
             else:
-                print('Checking for an established connection and assigned IP address...')
+                print('Checking for an assigned IP address and established connection...')
 
             # Wait for a short interval before checking again
             time.sleep(2)
     
-    except Exception as e:
-        print(f'An exception has been thrown:\n {e}')
+    except KeyboardInterrupt:
+        print('Interrupted network connectivity validation')
 
 
 def main():
@@ -114,8 +126,8 @@ def main():
     if args.connect:
         ssid, passphrase = args.connect
         store_wpa_entries(ssid, passphrase)
-        restart_service()
-        validate_wifi_connection()
+        restart_network_service()
+        validate_network_connection()
     else:
         parser.print_help()
 
